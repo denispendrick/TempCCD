@@ -8,6 +8,9 @@ It works as an optical pyrometer. A silicon CCD only starts seeing an object
 once it glows — very roughly above 500 °C — so this is for things like a kiln, a
 heating element or molten metal, not for room-temperature surfaces.
 
+The full write-up — principle, circuit, algorithm and program — is in
+[docs/design.md](docs/design.md).
+
 ## How it works
 
 ```
