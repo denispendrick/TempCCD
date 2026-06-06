@@ -87,6 +87,43 @@ aren't cooking continuously or collecting grime between runs.
 - **Seal it to the purge path** so the clean air actually sweeps across the front
   face of the glass instead of leaking past it.
 
+## What to make each part from
+
+Same rule all the way through: each part wants to be either cool or
+non-reflective, because anything hot or shiny in the field of view turns into
+light the sensor reads as signal.
+
+| Part | Default | Step up to | Keep away from |
+|---|---|---|---|
+| Heat shield | polished stainless (304/316) | stainless face + air gap + aluminized back layer; ceramic-fibre board behind | bare aluminum near real heat — melts at 660 °C |
+| Standoffs and brackets | stainless | alumina ceramic at the hot end | aluminum bridging heat into the body |
+| Purge gas | filtered, dried, oil-free air | nitrogen near molten metal or reducing atmospheres | wet or oily shop air |
+| Purge plumbing at the aperture | stainless tube and fittings | — | plastic or PTFE in the hot zone |
+| Window | fused silica (quartz) | sapphire for spatter, abrasion or pressure | plastics; borosilicate near fast thermal shock |
+| Window gasket | thin ceramic fibre | graphite or vermiculite for very hot | rubber |
+| Sighting tube | stainless, blackened and baffled inside | alumina or mullite ceramic at the tip; SiC for abrasive | a dark tube left to heat-soak |
+
+A few things that don't fit in a table:
+
+**Heat shield.** Polished stainless reflects well enough and keeps its shape;
+aluminum reflects better but only survives where it stays well under its melting
+point, so save it for a back layer behind a stainless face. For a furnace, stack
+them with an air gap, and add ceramic-fibre board if conducted heat is a problem
+too.
+
+**Air purge.** The gas matters as much as the metal — oil or moisture baked onto
+the window is worse than no purge at all. Keep stainless right at the hot
+aperture; cheaper brass or plastic is fine further back where it stays cool.
+
+**Window.** Already laid out in the table under *Protecting the sensor* — fused
+silica by default, sapphire when it's taking hits. Whatever you use has to pass
+your calibration wavelength.
+
+**Sighting tube.** The one with a twist: matte black inside to kill stray
+reflections, but kept cool so that black surface doesn't start glowing into the
+lens itself. Stainless with a baffled, blackened bore handles moderate heat;
+alumina or mullite ceramic is the move where the tip really cooks.
+
 ## Keeping the sensor cool isn't just about survival
 
 Silicon dark current roughly doubles every 7–8 °C. So a hot CCD doesn't only
