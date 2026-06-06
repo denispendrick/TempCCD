@@ -1,0 +1,17 @@
+# Build output
+/build/
+*.hex
+*.bin
+*.elf
+*.map
+*.o
+*.a
+
+# Tooling
+.pio/
+.vscode/
+.theia/
+
+# OS noise
+.DS_Store
+Thumbs.db
