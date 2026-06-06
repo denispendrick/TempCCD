@@ -42,6 +42,9 @@ TCD1304 output has to be buffered and shifted into 0–3.3 V before it touches
 
 Pin assignments live at the top of `firmware/TempCCD/Config.h`.
 
+Measuring something genuinely hot? `docs/mounting.md` covers how to mount the
+camera and shield the sensor so it survives the heat and stays clean.
+
 ## Build and flash
 
 Install the core and libraries once:
