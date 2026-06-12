@@ -1,11 +1,11 @@
 // ============================================================================
-//  TempCCD - non-contact CCD pyrometer
+//  TempCCD - non-contact optical pyrometer
 // ----------------------------------------------------------------------------
-//  A TCD1304 linear CCD is read through the Arduino GIGA R1's ADC + DMA, the
-//  collected brightness is converted to a temperature, and the result is shown
-//  on a 16x2 I2C LCD (and echoed over Serial).
+//  An OV5640 camera on the Arduino GIGA R1 captures grayscale frames over DCMI
+//  and DMA, the brightness of a hot target is read from a region of interest,
+//  converted to a temperature, and shown on a 16x2 I2C LCD (and over Serial).
 //
-//  Pipeline:  CCD -> DMA capture -> brightness -> pyrometry -> LCD
+//  Pipeline:  camera -> DMA frame -> ROI brightness -> pyrometry -> LCD
 //
 //  Wiring and calibration live in docs/. This file is just the glue.
 // ============================================================================
@@ -13,23 +13,18 @@
 #include <math.h>
 
 #include "Config.h"
-#include "CCDSensor.h"
+#include "CameraSensor.h"
 #include "Pyrometer.h"
 #include "TemperatureDisplay.h"
 
-static CCDSensor ccd;
+static CameraSensor camera;
 static Pyrometer pyrometer;
 static TemperatureDisplay display;
 
-static uint16_t frame[CCD_TOTAL_PIXELS];
 static uint32_t lastRefresh = 0;
 static bool haveLcd = false;
 
-// Forward declarations (static functions are not auto-prototyped by the IDE).
 static void handleReading(const FrameStats& stats);
-#if DEBUG_DUMP_FRAME
-static void dumpFrame(const uint16_t* f);
-#endif
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
@@ -41,41 +36,42 @@ void setup() {
     Serial.println("LCD not found at configured I2C address; using Serial only.");
   }
 
-  if (!ccd.begin()) {
-    Serial.println("CCD/ADC init failed - halting.");
+  if (!camera.begin()) {
+    Serial.println("Camera init failed - halting.");
     if (haveLcd) {
-      display.showStatus("CCD INIT FAIL");
+      display.showStatus("CAM INIT FAIL");
     }
     while (true) {
       delay(1000);
     }
   }
 
-  delay(50);  // let the first readouts flush through the pipeline
   Serial.println("TempCCD ready.");
 }
 
 void loop() {
-  if (!ccd.frameReady() || !ccd.readFrame(frame)) {
+  // Capture on the display cadence rather than spinning at full frame rate.
+  const uint32_t now = millis();
+  if (now - lastRefresh < DISPLAY_REFRESH_MS) {
+    return;
+  }
+  lastRefresh = now;
+
+  FrameStats stats;
+  if (!camera.capture(stats)) {
+    Serial.println("Frame capture timed out.");
+    if (haveLcd) {
+      display.showStatus("NO FRAME");
+    }
     return;
   }
 
-  const FrameStats stats = pyrometer.analyze(frame);
-
-#if DEBUG_DUMP_FRAME
-  dumpFrame(frame);
-#endif
-
-  const uint32_t now = millis();
-  if (now - lastRefresh >= DISPLAY_REFRESH_MS) {
-    lastRefresh = now;
-    handleReading(stats);
-  }
+  handleReading(stats);
 }
 
 static void handleReading(const FrameStats& stats) {
   if (stats.saturated) {
-    Serial.println("Saturated - reduce light or exposure.");
+    Serial.println("Saturated - stop down the optics or add a filter.");
     if (haveLcd) {
       display.showStatus("SATURATED");
     }
@@ -115,21 +111,3 @@ static void handleReading(const FrameStats& stats) {
   Serial.print(celsius, 1);
   Serial.println(" C");
 }
-
-#if DEBUG_DUMP_FRAME
-// Dump the whole frame over Serial at ~1 Hz for tuning the dark/signal windows.
-static void dumpFrame(const uint16_t* f) {
-  static uint32_t lastDump = 0;
-  const uint32_t now = millis();
-  if (now - lastDump < 1000) {
-    return;
-  }
-  lastDump = now;
-
-  for (uint16_t i = 0; i < CCD_TOTAL_PIXELS; ++i) {
-    Serial.print(f[i]);
-    Serial.print((i % 16 == 15) ? '\n' : ' ');
-  }
-  Serial.println();
-}
-#endif
