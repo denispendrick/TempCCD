@@ -4,17 +4,8 @@
 
 #include "Config.h"
 
-// What we pull out of a single CCD frame before turning it into a temperature.
-struct FrameStats {
-  float darkLevel;    // mean of the shielded pixels, in counts
-  float brightness;   // dark-subtracted signal, in counts (never negative)
-  uint16_t peak;      // brightest raw count in the signal window
-  bool saturated;     // peak is hard against full scale
-  bool valid;         // enough signal to treat as a real target
-};
-
 // ============================================================================
-//  Pyrometer - turns CCD brightness into temperature
+//  Pyrometer - turns measured brightness into temperature
 // ----------------------------------------------------------------------------
 //  Uses the Wien approximation of Planck's law over the CCD's narrow effective
 //  band:
@@ -22,14 +13,11 @@ struct FrameStats {
 //  where B = c2 / lambda_eff and A = ln G folds in optics, emissivity and gain.
 //  A and B come from a two-point calibration against known temperatures.
 //
-//  Note: a silicon CCD only sees an object once it glows (roughly >500 C), so
-//  this measures hot/incandescent targets, not room-temperature surfaces.
+//  Note: a silicon sensor only sees an object once it glows (roughly >500 C),
+//  so this measures hot/incandescent targets, not room-temperature surfaces.
 // ============================================================================
 class Pyrometer {
  public:
-  // Reduce a frame to dark level, brightness, peak and validity flags.
-  FrameStats analyze(const uint16_t* frame) const;
-
   // Temperature in kelvin for a given brightness; NAN if outside the model's
   // valid domain or the plausibility window in Config.h.
   float temperatureK(float brightness) const;

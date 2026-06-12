@@ -2,40 +2,6 @@
 
 #include <math.h>
 
-FrameStats Pyrometer::analyze(const uint16_t* frame) const {
-  // Dark reference: mean of the light-shielded window.
-  uint32_t darkSum = 0;
-  for (uint16_t i = CCD_DARK_FIRST; i <= CCD_DARK_LAST; ++i) {
-    darkSum += frame[i];
-  }
-  const uint16_t darkCount = CCD_DARK_LAST - CCD_DARK_FIRST + 1;
-  const float dark = static_cast<float>(darkSum) / darkCount;
-
-  // Signal: mean and peak over the illuminated window.
-  uint32_t sigSum = 0;
-  uint16_t peak = 0;
-  for (uint16_t i = CCD_SIGNAL_FIRST; i <= CCD_SIGNAL_LAST; ++i) {
-    const uint16_t v = frame[i];
-    sigSum += v;
-    if (v > peak) {
-      peak = v;
-    }
-  }
-  const uint16_t sigCount = CCD_SIGNAL_LAST - CCD_SIGNAL_FIRST + 1;
-  const float sigMean = static_cast<float>(sigSum) / sigCount;
-
-  FrameStats s;
-  s.darkLevel = dark;
-  s.brightness = sigMean - dark;
-  if (s.brightness < 0.0f) {
-    s.brightness = 0.0f;
-  }
-  s.peak = peak;
-  s.saturated = peak >= static_cast<uint16_t>(ADC_FULL_SCALE * 0.98f);
-  s.valid = (s.brightness >= PYRO_MIN_BRIGHTNESS) && !s.saturated;
-  return s;
-}
-
 float Pyrometer::temperatureK(float brightness) const {
   if (brightness <= 0.0f) {
     return NAN;
