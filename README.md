@@ -42,6 +42,9 @@ price of using a consumer CMOS camera instead of a raw sensor.
 No analog front-end this time — the camera is digital and seats straight into
 the GIGA's camera connector, so there's nothing to buffer or level-shift.
 
+Curious why this moved off the linear CCD? `docs/sensor-choice.md` lays out the
+TCD1304-vs-OV5640 trade-off.
+
 Camera mode and the regions of interest live at the top of
 `firmware/TempCCD/Config.h`.
 
