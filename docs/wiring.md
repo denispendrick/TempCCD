@@ -1,40 +1,26 @@
 # Wiring
 
-Signals are referenced by name. Most TCD1304 breakout boards label their pads
-`MCLK`/`fM`, `SH`, `ICG`, `OS`, `5V` and `GND` — match those rather than chasing
-raw chip pin numbers, since they differ between boards.
+Two connections, and one of them is a ribbon you just plug in. The OV5640 is
+digital, so there's no analog front-end, no clock to generate, and no pins to
+level-shift.
 
-## CCD to GIGA
+## Camera to GIGA
 
-| CCD pad      | GIGA pin | Notes                                            |
-|--------------|----------|--------------------------------------------------|
-| fM / MCLK    | D2       | 2 MHz master clock (hardware PWM)                |
-| SH           | D3       | shift gate                                       |
-| ICG          | D4       | integration clear gate                           |
-| OS           | A0       | analog output — **through the front-end below**  |
-| 5V           | 5V       | sensor supply                                    |
-| GND          | GND      | common ground                                    |
+The OV5640 module seats into the GIGA R1's dedicated camera connector. That one
+connector carries the whole DCMI bus — pixel data, pixel clock, HSYNC, VSYNC,
+the SCCB control lines, the master clock and power — so there is nothing to wire
+by hand.
 
-The pins are set in `firmware/TempCCD/Config.h`. If `fM` never oscillates, its
-timer is probably claimed by the ADC or the Ticker — move `PIN_CCD_FM` to a
-different PWM pin and re-flash.
+| Step | Notes |
+|---|---|
+| Power off the GIGA first | never seat or unseat the ribbon live |
+| Check orientation | the FPC contacts face the way the connector expects; don't force it |
+| Latch the connector | flip the retainer back down so the ribbon can't creep out |
+| Support the module | don't let it dangle on the ribbon — strain cracks the FPC |
 
-## Analog front-end (do not skip)
-
-The GIGA's analog inputs run at **3.3 V and are not 5 V tolerant**. The TCD1304
-`OS` output swings around a DC level near the sensor supply, which is well above
-3.3 V, so it has to be conditioned before it reaches `A0`:
-
-1. **Buffer** `OS` with a rail-to-rail op-amp (e.g. MCP6002) running off 3.3 V.
-2. **Shift and scale** the signal so the full pixel swing maps into roughly
-   0.1–3.2 V. A simple inverting/level-shift stage around the op-amp does this.
-3. **Clamp** to 3.3 V (a small Schottky to the 3.3 V rail) as insurance.
-4. Keep the op-amp output **low impedance** — the ADC samples fast, so a stiff
-   driver gives cleaner pixels.
-
-Remember the output is inverted (more light = lower `OS` voltage). The firmware
-already flips this in software (`CCD_OUTPUT_INVERTED`), so wire for signal
-integrity and let the code handle the sense.
+Use an OV5640 module meant for the GIGA camera connector (e.g. Arducam's). The
+camera-connector pinout is fixed in hardware, so there's nothing to set in
+`Config.h` for it beyond the capture mode.
 
 ## LCD to GIGA
 
@@ -50,8 +36,16 @@ stays blank, scan the bus and set `LCD_I2C_ADDRESS` in `Config.h` to match.
 
 ## Power and grounding
 
-- Give the CCD a clean 5 V; add a 100 nF decoupling cap close to its supply pin
-  and a larger bulk cap (10 µF) nearby.
-- Keep the analog ground return short and away from the digital clock traces —
-  `fM` is a fast square wave and will couple into `OS` if they run together.
-- One common ground between the GIGA, the CCD board and the LCD.
+- The camera is powered through its connector, so it needs nothing extra.
+- Give the LCD a clean 5 V and share a common ground with the GIGA.
+- Keep the camera ribbon and the lens away from the hot zone — see
+  [mounting.md](mounting.md). The ribbon's insulation and the module itself are
+  the temperature-sensitive parts, not some op-amp.
+
+## Lens and focus
+
+The OV5640 ships with a small lens already. For pyrometry you want the hot target
+focused onto the middle of the frame so it fills the signal ROI. Rotate the lens
+to focus, and frame the target with the help of the serial brightness readout
+(see [calibration.md](calibration.md)). A longer lens lets you stand further back
+from the heat for the same framing, which is usually what you want.

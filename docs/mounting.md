@@ -1,6 +1,6 @@
 # Mounting and sensor protection
 
-Pointing a CCD at something glowing hot is the easy part. Keeping the sensor
+Pointing a camera at something glowing hot is the easy part. Keeping the sensor
 alive, keeping the optics clean, and aiming it the same way every time is what
 actually takes thought. Here's how to set it up.
 
@@ -9,8 +9,8 @@ actually takes thought. Here's how to set it up.
 **Stand back and let the lens do the work.** Radiant heat falls off fast with
 distance, so the further away you mount the camera the lighter the thermal load
 on it. Use the lens to image a small distant spot instead of crowding the
-source. A TCD1304 wants to stay cool — commercial parts are usually happy from
-roughly 0 to 60 °C, so check your datasheet and give yourself a wide margin.
+source. The OV5640 wants to stay cool — commercial CMOS parts are usually rated
+to around 60–70 °C, so check its datasheet and give yourself a wide margin.
 
 **Stay out of the plume.** Hot air, smoke and spatter all rise. Mounting the
 camera directly over the source drags that straight across the optics and bakes
@@ -43,7 +43,7 @@ graph LR
     AP --> W["Protective window<br/>fused silica / sapphire"]
     W --> ST["Sighting tube"]
     ST --> L["Lens"]
-    L --> C["CCD sensor<br/>kept < 60 °C"]
+    L --> C["camera sensor<br/>kept &lt; 60 °C"]
 ```
 
 **Protective window.** This is the main physical barrier — it blocks hot gas,
@@ -128,7 +128,7 @@ alumina or mullite ceramic is the move where the tip really cooks.
 
 Silicon dark current roughly doubles every 7–8 °C. So a hot CCD doesn't only
 risk damage — its baseline climbs and wanders, which is exactly the drift the
-dark-reference pixels are there to cancel. A cooler sensor gives a cleaner,
+dark ROI is there to cancel. A cooler sensor gives a cleaner,
 steadier reading. The shielding and cooling above buy you accuracy, not just
 longevity.
 
