@@ -6,7 +6,7 @@
 #include <string.h>
 
 namespace {
-constexpr char kTitle[] = "CCD Pyrometer";
+constexpr char kTitle[] = "Pyrometer";
 constexpr uint8_t kDegree = 0xDF;  // degree glyph in the HD44780 character ROM
 }  // namespace
 
